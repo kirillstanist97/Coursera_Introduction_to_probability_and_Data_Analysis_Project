@@ -480,9 +480,7 @@ summary {
 <p>As a first question, we might be interested in exploring the relationship between the party the person voted for, the party that was their favourite, and if they believed that their vote makes a difference – focusing on the question that are people who believe their vote makes a difference more likely to strategically vote for a party not their favourite. To achieve this, we familiarise ourselves with the variables <code>jpartyvote</code>, <code>jdiffvoting</code>, and <code>_singlefav</code>. First we check the codebook (see Appendix), then we explore the data.</p>
 <p>Viewing the entire dataset in the Data Viewer window by clicking on the data frame’s name in the Environment or running the <code>View()</code> command in the Console can be ineffective since the Data Viewer only shows the first 100 columns of the data frame.</p>
 <p>Using the <code>str()</code> command on the entire dataset can also be equally ineffective. However we can subset the columns of interest and take a closer look at them. We can use the <code>dplyr</code> chain to select the variables of interest and investigate only their structure by adding <code>str()</code> at the end of the chain:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb3-2" title="2"><span class="st">  </span><span class="kw">select</span>(jpartyvote, jdiffvoting, _singlefav) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb3-3" title="3"><span class="st">  </span><span class="kw">str</span>()</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(jpartyvote, jdiffvoting, _singlefav) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">str</span>()</a></code></pre></div>
 <p>If we try to run that line, we will get an error message about unexpected input or missing object.</p>
 <p>We next need to diagnose where the problem lies – in the R code or in the data? The best way to troubleshoot this issue is to run each line of the <code>dplyr</code> chain one by one.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">selected_nzes2011 </a></code></pre></div>
@@ -522,16 +520,26 @@ summary {
 <p>However, when we have hundreds of column names, a useful tip is to just search out only possible names. We can search the names for a fragment of the name by using the <code>grep(&quot;FRAGMENT&quot;, variable, value = TRUE)</code> command, which in this case might be:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1"><span class="kw">grep</span>(<span class="st">&quot;singlefav&quot;</span>, <span class="kw">names</span>(selected_nzes2011), <span class="dt">value =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
 <pre><code>## [1] &quot;X_singlefav&quot;</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1"><span class="co">##my thoughts When you put &quot;Value&quot; as false you get the position of the string value in the set</span></a>
+<a class="sourceLine" id="cb10-2" title="2"><span class="kw">grep</span>(<span class="st">&quot;singlefav&quot;</span>, <span class="kw">names</span>(selected_nzes2011), <span class="dt">value =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
+<pre><code>## [1] 107</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1"><span class="co">#my thoughts/ Here I created vector that contains &quot;10&quot; inside different places. Then I tried to see how the fuction behaves(as you can see &quot;FALSE&quot; for value returens the relative position of very value that contans &quot;10&quot; anywhere in the set)</span></a>
+<a class="sourceLine" id="cb12-2" title="2">k&lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">105</span>,<span class="dv">106</span>,<span class="dv">107</span>,<span class="dv">50</span>)</a>
+<a class="sourceLine" id="cb12-3" title="3"><span class="kw">grep</span>(<span class="dv">10</span>, k,<span class="dt">value =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
+<pre><code>## [1] &quot;10&quot;  &quot;105&quot; &quot;106&quot; &quot;107&quot;</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1"><span class="kw">grep</span>(<span class="dv">10</span>, k,<span class="dt">value =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
+<pre><code>## [1] 3 4 5 6</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1"><span class="co">#my thoughts/ Checking refresh button</span></a></code></pre></div>
 <p>The <code>value = TRUE</code> argument, as described in the help for the <code>grep()</code> function reports the mathing character string, as opposed to the index number for that string.</p>
 <p>We can now confirm that the variable is called <code>X_singlefav</code>, so that is how we should be referring to it.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb10-2" title="2"><span class="st">  </span><span class="kw">select</span>(jpartyvote, jdiffvoting, X_singlefav) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb10-3" title="3"><span class="st">  </span><span class="kw">str</span>()</a></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb17-2" title="2"><span class="st">  </span><span class="kw">select</span>(jpartyvote, jdiffvoting, X_singlefav) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb17-3" title="3"><span class="st">  </span><span class="kw">str</span>()</a></code></pre></div>
 <p>These are all categorical data, however they are recorded as characters (text strings) as opposed to factors.</p>
 <p>An easy way of tabulating these data to see how many times each level of is to use the <code>group_by()</code> function along with the <code>summarise()</code> command:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb11-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jpartyvote) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb11-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb18-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jpartyvote) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb18-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
 <pre><code>## # A tibble: 14 x 2
 ##    jpartyvote    count
 ##    &lt;chr&gt;         &lt;int&gt;
@@ -550,10 +558,10 @@ summary {
 ## 13 United Future    14
 ## 14 &lt;NA&gt;            308</code></pre>
 <p>We can see that 23 people answered <code>&quot;Don&#39;t know&quot;</code>. Since our question is about people who knew which party they voted for, we might want to exclude these observations from our analysis. We can do so by <code>filter</code>ing them out.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb13-2" title="2"><span class="st">  </span><span class="kw">filter</span>(jpartyvote <span class="op">!=</span><span class="st"> &quot;Don&#39;t know&quot;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb13-3" title="3"><span class="st">  </span><span class="kw">group_by</span>(jpartyvote) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb13-4" title="4"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb20-2" title="2"><span class="st">  </span><span class="kw">filter</span>(jpartyvote <span class="op">!=</span><span class="st"> &quot;Don&#39;t know&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb20-3" title="3"><span class="st">  </span><span class="kw">group_by</span>(jpartyvote) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb20-4" title="4"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
 <pre><code>## # A tibble: 12 x 2
 ##    jpartyvote    count
 ##    &lt;chr&gt;         &lt;int&gt;
@@ -572,9 +580,9 @@ summary {
 <p>Because there is a <code>%&gt;%</code> at the end of the line, R knows to continue on to the next line, as with any other ‘to be continued’ symbol at the end of the line.</p>
 <p>Note that adding the filter also got rid of the <code>NA</code> entries. NA (Not Available) is used to indicate blank entries – those observations for which there is no data recorded. It is always a good plan to be aware of NAs and deliberately include them in or exclude them from the analysis so that the final results are not surprising. In this case since NA indicates that these people did not answer the question about which party they voted for, exluding them from the analysis makes sense.</p>
 <p>We can also similarly view the levels and number of occurances of these levels in the <code>X_singlefav</code> variable:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb15-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(X_singlefav) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb15-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb22-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(X_singlefav) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb22-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
 <pre><code>## # A tibble: 8 x 2
 ##   X_singlefav   count
 ##   &lt;chr&gt;         &lt;int&gt;
@@ -589,10 +597,10 @@ summary {
 <p>This set also has <code>NA</code> entries, but in this case we don’t want to get rid of anything but the <code>NA</code>s so we need to target them directly. <code>NA</code> entries need special targeting because they do not actually exist (they are different to the text <code>&quot;NA&quot;</code> or a variable saved with the name <code>NA</code>).</p>
 <p>If we only wanted to find the <code>NA</code>s we would use the <code>is.na()</code> function with the name of the variable inside the parentheses.</p>
 <p>However since we want the entries that are <strong>not</strong> <code>NA</code>s we can use the <strong>Not</strong> operator, <code>!</code>, to indicate “we want all the ones that are not NA”:<code>!is.na()</code>. Hence we can <code>filter</code> out all non NAs in our <code>dplyr</code> chain:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb17-2" title="2"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(X_singlefav)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb17-3" title="3"><span class="st">  </span><span class="kw">group_by</span>(X_singlefav) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb17-4" title="4"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb24-2" title="2"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(X_singlefav)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb24-3" title="3"><span class="st">  </span><span class="kw">group_by</span>(X_singlefav) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb24-4" title="4"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
 <pre><code>## # A tibble: 7 x 2
 ##   X_singlefav   count
 ##   &lt;chr&gt;         &lt;int&gt;
@@ -604,10 +612,10 @@ summary {
 ## 6 NZ First        138
 ## 7 United Future   128</code></pre>
 <p>And remember that we can <code>filter</code> for multiple characteristics at once:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb19-2" title="2"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(X_singlefav), jpartyvote <span class="op">!=</span><span class="st"> &quot;Don&#39;t know&quot;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb19-3" title="3"><span class="st">  </span><span class="kw">group_by</span>(X_singlefav) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb19-4" title="4"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count=</span><span class="kw">n</span>())</a></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb26-2" title="2"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(X_singlefav), jpartyvote <span class="op">!=</span><span class="st"> &quot;Don&#39;t know&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb26-3" title="3"><span class="st">  </span><span class="kw">group_by</span>(X_singlefav) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb26-4" title="4"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count=</span><span class="kw">n</span>())</a></code></pre></div>
 <pre><code>## # A tibble: 7 x 2
 ##   X_singlefav   count
 ##   &lt;chr&gt;         &lt;int&gt;
@@ -619,9 +627,9 @@ summary {
 ## 6 NZ First        119
 ## 7 United Future   115</code></pre>
 <p>If we examine the categories in <code>jdiffvoting</code> we can see that this variable has levels such as both <code>&quot;Don&#39;t know&quot;</code> and <code>NA</code>.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb21-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jdiffvoting) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb21-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb28-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jdiffvoting) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb28-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
 <pre><code>## # A tibble: 7 x 2
 ##   jdiffvoting                                                       count
 ##   &lt;chr&gt;                                                             &lt;int&gt;
@@ -635,13 +643,13 @@ summary {
 <p>We need to decide how we want to handle these levels in our analysis.</p>
 <p>Remember that our main question is about whether people vote for their favorite party or a diffent one. Hence an straighforwrd approach would be to first determine whether each observation in the data represents a person who voted for the party same as their favorite party or different. This requires creating a new variable with the <code>mutate()</code> function.</p>
 <p>In creating this variable we want to evaluate if for a given observation the values in the <code>jpartyvote</code> and <code>X_singlefav</code> variables are the same, or different:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1">selected_nzes2011 &lt;-<span class="st"> </span>selected_nzes2011 <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb23-2" title="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">sameparty =</span> <span class="kw">ifelse</span>(jpartyvote <span class="op">==</span><span class="st"> </span>X_singlefav, <span class="st">&quot;same&quot;</span>, <span class="st">&quot;different&quot;</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" title="1">selected_nzes2011 &lt;-<span class="st"> </span>selected_nzes2011 <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb30-2" title="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">sameparty =</span> <span class="kw">ifelse</span>(jpartyvote <span class="op">==</span><span class="st"> </span>X_singlefav, <span class="st">&quot;same&quot;</span>, <span class="st">&quot;different&quot;</span>))</a></code></pre></div>
 <p>This creates a new variable named <code>sameparty</code> that has the value <code>&quot;same&quot;</code> if <code>jpartyvote</code> is equal to <code>X_singlefav</code>, and <code>&quot;different&quot;</code> otherwise.</p>
 <p>We can again check our work by exploring the groupings in a View:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb24-2" title="2"><span class="kw">group_by</span>(jpartyvote, X_singlefav, sameparty) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb24-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb31-2" title="2"><span class="kw">group_by</span>(jpartyvote, X_singlefav, sameparty) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb31-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
 <pre><code>## # A tibble: 82 x 4
 ## # Groups:   jpartyvote, X_singlefav [82]
 ##    jpartyvote X_singlefav   sameparty count
@@ -659,10 +667,10 @@ summary {
 ## # ... with 72 more rows</code></pre>
 <p>We can see that observations where <code>jpartyvote</code> equaled <code>X_singlefav</code>, the value <code>&quot;same&quot;</code> was recorded for the new variable <code>sameparty</code>, and the value <code>&quot;different&quot;</code> was recorded otherwise. If either <code>jpartyvote</code> or <code>X_singlefav</code> had an <code>NA</code>, R could not check for equality and hence <code>NA</code> was recorded for the <code>sameparty</code> variable as well.</p>
 <p>To view and summarize the “same” entries we can use the following:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb26-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jpartyvote, X_singlefav, sameparty) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb26-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb26-4" title="4"><span class="st">  </span><span class="kw">filter</span>(sameparty <span class="op">==</span><span class="st"> &quot;same&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb33-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jpartyvote, X_singlefav, sameparty) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb33-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb33-4" title="4"><span class="st">  </span><span class="kw">filter</span>(sameparty <span class="op">==</span><span class="st"> &quot;same&quot;</span>)</a></code></pre></div>
 <pre><code>## # A tibble: 7 x 4
 ## # Groups:   jpartyvote, X_singlefav [7]
 ##   jpartyvote    X_singlefav   sameparty count
@@ -675,10 +683,10 @@ summary {
 ## 6 NZ First      NZ First      same         82
 ## 7 United Future United Future same          5</code></pre>
 <p>And to view and summarize the “different” entries we can use the following:</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb28-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jpartyvote, X_singlefav, sameparty) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb28-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb28-4" title="4"><span class="st">  </span><span class="kw">filter</span>(sameparty <span class="op">==</span><span class="st"> &quot;different&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb35-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb35-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jpartyvote, X_singlefav, sameparty) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb35-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb35-4" title="4"><span class="st">  </span><span class="kw">filter</span>(sameparty <span class="op">==</span><span class="st"> &quot;different&quot;</span>)</a></code></pre></div>
 <pre><code>## # A tibble: 59 x 4
 ## # Groups:   jpartyvote, X_singlefav [59]
 ##    jpartyvote    X_singlefav   sameparty count
@@ -695,10 +703,10 @@ summary {
 ## 10 Another party Green         different     2
 ## # ... with 49 more rows</code></pre>
 <p>We can also check how we got any <code>NA</code>s we have by using the <code>is.na()</code> function:</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb30-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jpartyvote, X_singlefav, sameparty) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb30-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb30-4" title="4"><span class="st">  </span><span class="kw">filter</span>(<span class="kw">is.na</span>(sameparty))</a></code></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb37-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb37-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jpartyvote, X_singlefav, sameparty) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb37-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb37-4" title="4"><span class="st">  </span><span class="kw">filter</span>(<span class="kw">is.na</span>(sameparty))</a></code></pre></div>
 <pre><code>## # A tibble: 16 x 4
 ## # Groups:   jpartyvote, X_singlefav [16]
 ##    jpartyvote   X_singlefav   sameparty count
@@ -724,14 +732,14 @@ summary {
 <div id="step-four.-prepare-for-the-second-question" class="section level2">
 <h2>Step four. Prepare for the second question</h2>
 <p>As a second question, we might be interested in exploring the relationship between age of voters and how much they like the NZ First party. We become familiar with the variables <code>jnzflike</code> and <code>jage</code> in the codebook, then explore the data.</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1"><span class="kw">str</span>(selected_nzes2011<span class="op">$</span>jnzflike)</a></code></pre></div>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" title="1"><span class="kw">str</span>(selected_nzes2011<span class="op">$</span>jnzflike)</a></code></pre></div>
 <pre><code>##  Factor w/ 12 levels &quot;0&quot;,&quot;1&quot;,&quot;10&quot;,&quot;2&quot;,..: 1 1 4 10 4 11 NA NA 1 12 ...</code></pre>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" title="1"><span class="kw">str</span>(selected_nzes2011<span class="op">$</span>jage)</a></code></pre></div>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb41-1" title="1"><span class="kw">str</span>(selected_nzes2011<span class="op">$</span>jage)</a></code></pre></div>
 <pre><code>##  int [1:3101] 37 37 28 71 43 NA 59 68 64 70 ...</code></pre>
 <p><code>jnzflike</code> is a factor variable, in fact it’s ordinal and by default the levels are listed in alphabetical order. Since this is a categorical variable, we can also summarize the occurances of each level with <code>group_by()</code> and <code>summarise()</code> again:</p>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb36-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb36-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jnzflike) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb36-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb43-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb43-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jnzflike) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb43-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
 <pre><code>## Warning: Factor `jnzflike` contains implicit NA, consider using
 ## `forcats::fct_explicit_na`</code></pre>
 <pre><code>## # A tibble: 13 x 2
@@ -752,20 +760,20 @@ summary {
 ## 13 &lt;NA&gt;         133</code></pre>
 <p>While <code>jnzflike</code> is on a 0 to 10 scale, this variable also has a level labeled <code>&quot;Don&#39;t know&quot;</code>, which is why R stores this variable as not a numeric variable.</p>
 <p><code>jage</code>, on the other hand, is an integer, with values that are whole numbers between 0 and infinity (or <code>NA</code>). For this variable we would want to take a look at numerical summaries such as means, medians, etc.</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb39-2" title="2"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">agemean =</span> <span class="kw">mean</span>(jage), <span class="dt">agemedian =</span> <span class="kw">median</span>(jage), <span class="dt">agesd =</span> <span class="kw">sd</span>(jage), </a>
-<a class="sourceLine" id="cb39-3" title="3">            <span class="dt">agemin =</span> <span class="kw">min</span>(jage), <span class="dt">agemax =</span> <span class="kw">max</span>(jage))</a></code></pre></div>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb46-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb46-2" title="2"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">agemean =</span> <span class="kw">mean</span>(jage), <span class="dt">agemedian =</span> <span class="kw">median</span>(jage), <span class="dt">agesd =</span> <span class="kw">sd</span>(jage), </a>
+<a class="sourceLine" id="cb46-3" title="3">            <span class="dt">agemin =</span> <span class="kw">min</span>(jage), <span class="dt">agemax =</span> <span class="kw">max</span>(jage))</a></code></pre></div>
 <pre><code>##   agemean agemedian agesd agemin agemax
 ## 1      NA        NA   NaN     NA     NA</code></pre>
 <p>What went wrong? The reason why all of the results were reported as NAs is that there were some NA entries in the <code>jage</code> variable (people not reporting their age). Since it is not possible to take the average of a series of values that contain <code>NA</code>s, obtaining the numerical summaries requires that we exclude the <code>NA</code>s from the calculation.</p>
 <p>Most numerical summary functions allow us to easily exclude <code>NA</code>s with the <code>na.rm</code> argument. See the help documentation for the <code>median</code> function for more information.</p>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb41-1" title="1">?median</a></code></pre></div>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb48-1" title="1">?median</a></code></pre></div>
 <pre><code>## starting httpd help server ... done</code></pre>
 <p>An alternative approach is just to <code>filter</code> out the <code>NA</code>s first, and then ask for the numerical summaries:</p>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb43-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb43-2" title="2"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span>(<span class="kw">is.na</span>(jage))) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb43-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">agemean =</span> <span class="kw">mean</span>(jage), <span class="dt">agemedian =</span> <span class="kw">median</span>(jage), <span class="dt">agesd =</span> <span class="kw">sd</span>(jage), </a>
-<a class="sourceLine" id="cb43-4" title="4">            <span class="dt">agemin =</span> <span class="kw">min</span>(jage), <span class="dt">agemax =</span> <span class="kw">max</span>(jage))</a></code></pre></div>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb50-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb50-2" title="2"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span>(<span class="kw">is.na</span>(jage))) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb50-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">agemean =</span> <span class="kw">mean</span>(jage), <span class="dt">agemedian =</span> <span class="kw">median</span>(jage), <span class="dt">agesd =</span> <span class="kw">sd</span>(jage), </a>
+<a class="sourceLine" id="cb50-4" title="4">            <span class="dt">agemin =</span> <span class="kw">min</span>(jage), <span class="dt">agemax =</span> <span class="kw">max</span>(jage))</a></code></pre></div>
 <pre><code>##    agemean agemedian   agesd agemin agemax
 ## 1 53.22328        54 17.5371     18    100</code></pre>
 <p>An age range of 18 to 100 is a reasonable age range for a voting age population, so there are no obvious errors in the data. If there were, we would need to decide if we should filter them out of the analysis.</p>
@@ -773,10 +781,10 @@ summary {
 <div id="approach-1-strongly-liking-and-disliking-nz-first-and-age" class="section level3">
 <h3>Approach 1: Strongly liking and disliking NZ First and age</h3>
 <p>If we wanted to select only two of the possible levels in how much people like NZ First, we can filter for these specific levels. When interested in filtering for multiple values a variable can take, the <code>%in%</code> operator can come in handy:</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb45-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb45-2" title="2"><span class="st">  </span><span class="kw">filter</span>(jnzflike <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;0&quot;</span>,<span class="st">&quot;10&quot;</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb45-3" title="3"><span class="st">  </span><span class="kw">group_by</span>(jnzflike) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb45-4" title="4"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb52-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb52-2" title="2"><span class="st">  </span><span class="kw">filter</span>(jnzflike <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;0&quot;</span>,<span class="st">&quot;10&quot;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb52-3" title="3"><span class="st">  </span><span class="kw">group_by</span>(jnzflike) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb52-4" title="4"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
 <pre><code>## # A tibble: 2 x 2
 ##   jnzflike count
 ##   &lt;fct&gt;    &lt;int&gt;
@@ -788,11 +796,11 @@ summary {
 <div id="approach-2-age-and-liking-for-nz-first" class="section level3">
 <h3>Approach 2: Age and liking for NZ First</h3>
 <p>We might also like to refine our question slightly, asking do people above retirement age (65 in New Zealand) like NZ First more than younger people. To do this we can turn the numeric age variable into a categorical variable based on whether people are 65 years or older or younger than 65. Once again we make use of the <code>mutate()</code> and <code>ifelse()</code> functions:</p>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb47-1" title="1">selected_nzes2011 &lt;-<span class="st"> </span>selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb47-2" title="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">retiredage =</span> <span class="kw">ifelse</span>(jage <span class="op">&gt;=</span><span class="st"> </span><span class="dv">65</span>, <span class="st">&quot;retired age&quot;</span>, <span class="st">&quot;working age&quot;</span>))</a>
-<a class="sourceLine" id="cb47-3" title="3">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb47-4" title="4"><span class="st">  </span><span class="kw">group_by</span>(retiredage) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb47-5" title="5"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb54-1" title="1">selected_nzes2011 &lt;-<span class="st"> </span>selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb54-2" title="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">retiredage =</span> <span class="kw">ifelse</span>(jage <span class="op">&gt;=</span><span class="st"> </span><span class="dv">65</span>, <span class="st">&quot;retired age&quot;</span>, <span class="st">&quot;working age&quot;</span>))</a>
+<a class="sourceLine" id="cb54-3" title="3">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb54-4" title="4"><span class="st">  </span><span class="kw">group_by</span>(retiredage) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb54-5" title="5"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
 <pre><code>## # A tibble: 3 x 2
 ##   retiredage  count
 ##   &lt;chr&gt;       &lt;int&gt;
@@ -802,17 +810,17 @@ summary {
 <p>We can see that individuals in the dataset are now labeled as either <code>&quot;retired age&quot;</code> or <code>&quot;working age&quot;</code> or neither (<code>NA</code>), which we can easily filter out if need be.</p>
 <p>This is an example of using a numerical threshold to convert a numerical variable to a categorical variable.</p>
 <p>For approach 2, we might also be want to turn the scale of liking into numeric values, because at the moment we cannot easily get summary information of the data in factor form. For example, if we ty to run the following command, we get an error saying “need numeric data”.</p>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb49-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb49-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(retiredage) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb49-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">medlike =</span> <span class="kw">median</span>(jnzflike))</a></code></pre></div>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb56-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb56-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(retiredage) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb56-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">medlike =</span> <span class="kw">median</span>(jnzflike))</a></code></pre></div>
 <p>it generates a “need numeric data” error.</p>
 <p>We can change the type of data with functions of the form <code>as.thingtochangeto()</code>, but it is easy to go wrong with factors. For example, this is wrong:</p>
-<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb50-1" title="1">selected_nzes2011 &lt;-<span class="st"> </span>selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb50-2" title="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">numlikenzf =</span> <span class="kw">as.numeric</span>(jnzflike))</a></code></pre></div>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb57-1" title="1">selected_nzes2011 &lt;-<span class="st"> </span>selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb57-2" title="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">numlikenzf =</span> <span class="kw">as.numeric</span>(jnzflike))</a></code></pre></div>
 <p>We can see it has gone wrong if we use grouping to check our work (and it is a very good plan to check our work after converting factors).</p>
-<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb51-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb51-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jnzflike, numlikenzf) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb51-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb58-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb58-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jnzflike, numlikenzf) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb58-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
 <pre><code>## Warning: Factor `jnzflike` contains implicit NA, consider using
 ## `forcats::fct_explicit_na`
 
@@ -836,13 +844,13 @@ summary {
 ## 12 Don&#39;t know         12   224
 ## 13 &lt;NA&gt;               NA   133</code></pre>
 <p>Factor entries have two parts: the text we see on the screen, and a numeric order (remember how 10 was coming between 1 and 2 because of the alphabetical order). When we say “turn this into a number”, R uses the numeric order in which it stores the values to do that conversion, as opposed to the names of the levels of the categorical variable. Hence, we need a conversion method that will use the text strings that label the levels, as opposed to the storage order of these levels. We can do this by first saving the variable as a character variable, and then turning it into a number:</p>
-<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb54-1" title="1">selected_nzes2011 &lt;-<span class="st"> </span>selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb54-2" title="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">numlikenzf =</span> <span class="kw">as.numeric</span>(<span class="kw">as.character</span>(jnzflike)))</a></code></pre></div>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb61-1" title="1">selected_nzes2011 &lt;-<span class="st"> </span>selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb61-2" title="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">numlikenzf =</span> <span class="kw">as.numeric</span>(<span class="kw">as.character</span>(jnzflike)))</a></code></pre></div>
 <pre><code>## Warning: NAs introduced by coercion</code></pre>
 <p>The warning “NAs introduced by coercion” happens since the level <code>&quot;Don&#39;t know&quot;</code> cannot be turned into a number. But this should be fine for our purposes since we are interested in the numerical responses anyway.</p>
-<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb56-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb56-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jnzflike, numlikenzf) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb56-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
+<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb63-1" title="1">selected_nzes2011 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb63-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(jnzflike, numlikenzf) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb63-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())</a></code></pre></div>
 <pre><code>## Warning: Factor `jnzflike` contains implicit NA, consider using
 ## `forcats::fct_explicit_na`
 

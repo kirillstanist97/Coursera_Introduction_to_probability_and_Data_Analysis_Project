@@ -58,9 +58,7 @@ Viewing the entire dataset in the Data Viewer window by clicking on the data fra
 Using the `str()` command on the entire dataset can also be equally ineffective. However we can subset the columns of interest and take a closer look at them. We can use the `dplyr` chain to select the variables of interest and investigate only their structure by adding `str()` at the end of the chain:
 
 ```{r eval=FALSE}
-selected_nzes2011 %>% 
-  select(jpartyvote, jdiffvoting, _singlefav) %>% 
-  str()
+selected_nzes2011 %>% select(jpartyvote, jdiffvoting, _singlefav) %>% str()
 ```
 
 If we try to run that line, we will get an error message about unexpected input or missing object.
@@ -90,6 +88,15 @@ However, when we have hundreds of column names, a useful tip is to just search o
 
 ```{r findname}
 grep("singlefav", names(selected_nzes2011), value = TRUE)
+
+##my thoughts When you put "Value" as false you get the position of the string value in the set
+grep("singlefav", names(selected_nzes2011), value = FALSE)
+
+#my thoughts/ Here I created vector that contains "10" inside different places. Then I tried to see how the fuction behaves(as you can see "FALSE" for value returens the relative position of very value that contans "10" anywhere in the set)
+k<- c(0,5,10,105,106,107,50)
+grep(10, k,value = TRUE)
+grep(10, k,value = FALSE)
+
 ```
 
 The `value = TRUE` argument, as described in the help for the `grep()` function reports the mathing character string, as opposed to the index number for that string.
@@ -107,9 +114,14 @@ These are all categorical data, however they are recorded as characters (text st
 An easy way of tabulating these data to see how many times each level of is to use the `group_by()` function along with the `summarise()` command:
 
 ```{r count_votes}
+
 selected_nzes2011 %>% 
   group_by(jpartyvote) %>% 
   summarise(count = n())
+
+## My thoughts/ I also decided to add sorting
+
+selected_nzes2011 %>% group_by(jpartyvote) %>% summarise(count= n()) %>% arrange(desc(count))
 ```
 
 We can see that 23 people answered `"Don't know"`. Since our question is about people who knew which party they voted for, we might want to exclude these observations from our analysis. We can do so by `filter`ing them out.
@@ -118,7 +130,11 @@ We can see that 23 people answered `"Don't know"`. Since our question is about p
 selected_nzes2011 %>% 
   filter(jpartyvote != "Don't know") %>%
   group_by(jpartyvote) %>% 
-  summarise(count = n())
+  summarise(count = n()) 
+
+## My thoughts/ I also decided to add sorting
+
+selected_nzes2011 %>% filter(jpartyvote!="Don't know") %>% group_by(jpartyvote) %>% summarise(count= n()) %>% arrange(desc(count))
 ```
 
 Because there is a `%>%` at the end of the line, R knows to continue on to the next line, as with any other 'to be continued' symbol at the end of the line.
@@ -193,6 +209,12 @@ selected_nzes2011 %>%
   group_by(jpartyvote, X_singlefav, sameparty) %>%
   summarise(count = n()) %>% 
   filter(sameparty == "same")
+## My thougt/ does the position of "filter" function matter (IT DOES NOT MATTER)
+selected_nzes2011 %>% filter(sameparty == "same") %>% 
+  group_by(jpartyvote, X_singlefav, sameparty) %>%
+  summarise(count = n()) 
+  
+
 ```
 
 And to view and summarize the "different" entries we can use the following:
@@ -254,7 +276,7 @@ An alternative approach is just to `filter` out the `NA`s first, and then ask fo
 
 ```{r nonna_numeric_summaries}
 selected_nzes2011 %>% 
-  filter(!(is.na(jage))) %>%
+  filter(!is.na(jage)) %>%
   summarise(agemean = mean(jage), agemedian = median(jage), agesd = sd(jage), 
             agemin = min(jage), agemax = max(jage))
 ```
@@ -272,6 +294,13 @@ selected_nzes2011 %>%
   filter(jnzflike %in% c("0","10")) %>%
   group_by(jnzflike) %>% 
   summarise(count = n())
+
+## My thougt/ is it necessary to use %in% operator or jnzflike == "0"|jnzflike == "10" will suffice. ANSWR: YES it will work too
+selected_nzes2011 %>% 
+  filter(jnzflike == "0"|jnzflike == "10") %>%
+  group_by(jnzflike) %>% 
+  summarise(count = n())
+
 ```
 
 Remember that the `jnzflike` is not a numerical variable, hence we use the quotation marks around the values (even though they happen to be numbers).
@@ -309,6 +338,9 @@ We can change the type of data with functions of the form `as.thingtochangeto()`
 ```{r wrong_factor_conversion}
 selected_nzes2011 <- selected_nzes2011 %>% 
   mutate(numlikenzf = as.numeric(jnzflike))
+
+selected_nzes2011$numlikenzf
+
 ```
 
 We can see it has gone wrong if we use grouping to check our work (and it is a very good plan to check our work after converting factors).
@@ -324,6 +356,17 @@ Factor entries have two parts: the text we see on the screen, and a numeric orde
 ```{r correct_factor_conversion}
 selected_nzes2011 <- selected_nzes2011 %>% 
   mutate(numlikenzf = as.numeric(as.character(jnzflike)))
+
+## My thought/when you use "mutate" for the second time and add a column with the same name as already in the data frame, will the previous one be overwritten or there will be second column with the same name? ANSWER: yes it overrides
+
+selected_nzes2011 <- selected_nzes2011 %>% 
+  mutate(test = 5)
+
+selected_nzes2011 <- selected_nzes2011 %>% 
+  mutate(test = 4)
+
+selected_nzes2011$test
+
 ```
 
 The warning "NAs introduced by coercion" happens since the level `"Don't know"` cannot be turned into a number. But this should be fine for our purposes since we are interested in the numerical responses anyway.
