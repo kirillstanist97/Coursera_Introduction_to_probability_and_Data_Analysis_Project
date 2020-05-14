@@ -28,6 +28,8 @@ load("brfss2013.RData")
 
 
 
+
+
 * * *
 
 ## Part 1: Data
@@ -38,6 +40,42 @@ load("brfss2013.RData")
 ## Part 2: Research questions
 
 **Research quesion 1:**
+
+Is working out in the past 30 days is associated with the frequency of a person being nerouvs during previous month difference between men and femail?
+
+
+```{r}
+
+Nervous_sex_exercise <- brfss2013 %>% select(sex,exerany2, misnervs)
+
+Nervous_sex_exercise %>% filter(!is.na(misnervs),!is.na(sex) ) %>% group_by(sex) %>% summarise(count= n())
+
+Nervous_sex_exercise %>% filter(!is.na(sex)) %>% group_by(misnervs) %>% summarise(x=sum(sex))
+
+test <- Nervous_sex_exercise %>% filter(!is.na(misnervs),!is.na(sex) ) %>% group_by(misnervs,sex) %>% summarise(count= n())  %>% mutate(perc=count/sum(count)) %>% arrange
+
+Nervous_sex_exercise %>% filter(!is.na(misnervs),!is.na(sex)) %>% ggplot(aes(x=misnervs, fill=sex))+geom_bar()
+
+
+ggplot(test, aes(x=misnervs, y=perc, fill= sex ))+geom_bar(stat="identity")
+
+test$misnervs
+
+##ggplot replace count with percentage in geom_bar→https://stackoverflow.com/questions/24776200/ggplot-replace-count-with-percentage-in-geom-bar/48602277
+
+Nervous_sex_exercise %>% filter(!is.na(sex),!is.na(misnervs) ) %>% group_by(sex) %>% summarise(x=n()) %>% mutate(y=x/sum(x))
+
+
+```
+
+
+```{r}
+
+##
+ggplot(test, aes(x=misnervs, y=perc, fill= sex ))+geom_bar(stat="identity")
+ggplot(test, aes(x=misnervs))+geom_histogram()
+```
+
 
 **Research quesion 2:**
 
