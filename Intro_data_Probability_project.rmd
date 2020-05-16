@@ -46,38 +46,47 @@ Is working out in the past 30 days is associated with the frequency of a person 
 
 ```{r}
 
+#preparing the data
 Nervous_sex_exercise <- brfss2013 %>% select(sex,exerany2, misnervs)
 
-Nervous_sex_exercise %>% filter(!is.na(misnervs),!is.na(sex) ) %>% group_by(sex) %>% summarise(count= n())
+Nervous_sex_exercise <- Nervous_sex_exercise %>% filter(!is.na(misnervs),!is.na(sex))
 
-Nervous_sex_exercise %>% filter(!is.na(sex)) %>% group_by(misnervs) %>% summarise(x=sum(sex))
+#summarise by sex(how many males and femails in the prepared set)
 
-test <- Nervous_sex_exercise %>% filter(!is.na(misnervs),!is.na(sex) ) %>% group_by(misnervs,sex) %>% summarise(count= n())  %>% mutate(perc=count/sum(count)) %>% arrange
+Nervous_sex_exercise_Sex_prop <- Nervous_sex_exercise %>% group_by(sex) %>% summarise(count= n()) %>% mutate(perc=count/sum(count))
 
-Nervous_sex_exercise %>% filter(!is.na(misnervs),!is.na(sex)) %>% ggplot(aes(x=misnervs, fill=sex))+geom_bar()
+Nervous_sex_exercise_Sex_prop
+
+#percentages of people in groups of 
+
+Nervous_sex_exercise <- Nervous_sex_exercise %>% group_by(misnervs,sex) %>% summarise(count= n())  %>% mutate(perc=count/sum(count)) 
+
+#stacked barchart for number of people for different sexes being nervious a particular proportion of the past 30 days
+
+Nervous_sex_exercise_plot <- ggplot(Nervous_sex_exercise, aes(x=misnervs, y=perc, fill= sex ))+geom_bar(stat="identity")
+
+Nervous_sex_exercise_plot + geom_hline(yintercept=0.59)
 
 
-ggplot(test, aes(x=misnervs, y=perc, fill= sex ))+geom_bar(stat="identity")
 
-test$misnervs
+Nervous_sex_exercise <- Nervous_sex_exercise %>% mutate(diff_from_Marginal=ifelse(sex=="Male",Nervous_sex_exercise_Sex_prop$perc[1],Nervous_sex_exercise_Sex_prop$perc[2]	)-perc)
+
+
+ggplot(Nervous_sex_exercise, aes(fill=sex, y=diff_from_Marginal, x=misnervs)) + geom_bar(position="dodge", stat="identity")
 
 ##ggplot replace count with percentage in geom_bar→https://stackoverflow.com/questions/24776200/ggplot-replace-count-with-percentage-in-geom-bar/48602277
 
-Nervous_sex_exercise %>% filter(!is.na(sex),!is.na(misnervs) ) %>% group_by(sex) %>% summarise(x=n()) %>% mutate(y=x/sum(x))
-
-
+ 
+#QUESTION: How do I construct an experiment which will help me answer the question about "Are Men having in general more stresfull life than women". From what I know I would need to choose a random group of people and assign "sex" randomly to each of the participants, and then I will see what happens. But you can't change sexes of your participants. So what should I do?
 ```
 
-
-```{r}
-
-##
-ggplot(test, aes(x=misnervs, y=perc, fill= sex ))+geom_bar(stat="identity")
-ggplot(test, aes(x=misnervs))+geom_histogram()
-```
-
+It looks like in US men are more likely to have a nervious day then women.
 
 **Research quesion 2:**
+
+Is working out in the past 30 days is associated with number of days you mentaly feal not good and what is the difference between men and femail?
+
+
 
 **Research quesion 3:**
 
